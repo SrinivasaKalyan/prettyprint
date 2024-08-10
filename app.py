@@ -1,7 +1,7 @@
 import json
+import clipboard
 import streamlit as st
 from streamlit_lottie import st_lottie
-import pyperclip
 
 def load_lottie_file(filepath: str):
     with open(filepath, "r", encoding="utf-8") as f:
@@ -9,6 +9,24 @@ def load_lottie_file(filepath: str):
 
 lottie_animation = load_lottie_file("ani.json")
 lottie_animation1 = load_lottie_file("dolphin.json")
+
+
+def create_copy_button(text_to_copy):
+    button_id = "copyButton" + text_to_copy
+    
+    button_html = f"""<button id="{button_id}">Copy</button>
+    <script>
+    document.getElementById("{button_id}").onclick = function() {{
+        navigator.clipboard.writeText("{text_to_copy}").then(function() {{
+            console.log('Async: Copying to clipboard was successful!');
+        }}, function(err) {{
+            console.error('Async: Could not copy text: ', err);
+        }});
+    }}
+    </script>"""
+    
+    st.markdown(button_html, unsafe_allow_html=True)
+
 
 def main():
     st.set_page_config(layout="wide")
@@ -74,12 +92,12 @@ def main():
             try:
                 json_object = json.loads(json_data)
                 st.session_state.formatted_json = json.dumps(json_object, indent=indent_options)
+                
+                
+                
+
             except json.JSONDecodeError:
-                st.error("Invalid JSON")
-        
-        if st.button("Copy to Clipboard"):
-            if st.session_state.formatted_json:
-                pyperclip.copy(st.session_state.formatted_json)
+                st.error("Invalid JSON")    
         
         if st.session_state.formatted_json:
             st.download_button(
@@ -92,13 +110,14 @@ def main():
         # Centering the Lottie animation
         with st.container():
             st.markdown('<div class="centered-lottie">', unsafe_allow_html=True)
-            st_lottie(lottie_animation, height=100,key="lottie_animation")
+            st_lottie(lottie_animation, height=100, key="lottie_animation")
             st_lottie(lottie_animation1, height=100, key="lottie_animation1")
             st.markdown('</div>', unsafe_allow_html=True)
 
     with col3:
         st.markdown("<h1 style='text-align: center;'>Pretty JSON</h1>", unsafe_allow_html=True)
-        st.text_area("Formatted JSON", value=st.session_state.formatted_json, height=500, key="output_json")
-
+        formatted_json = st.text_area("Formatted JSON", value=st.session_state.formatted_json, height=500, key="output_json")
+        st.markdown(f'<textarea id="formatted_json" style="display:none;">{st.session_state.formatted_json}</textarea>', unsafe_allow_html=True)
+       
 if __name__ == "__main__":
     main()
